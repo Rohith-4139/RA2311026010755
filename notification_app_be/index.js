@@ -1,21 +1,29 @@
 const axios = require("axios");
 
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJyYjgyNDFAc3JtaXN0LmVkdS5pbiIsImV4cCI6MTc3NzcwMzMxOCwiaWF0IjoxNzc3NzAyNDE4LCJpc3MiOiJBZmZvcmQgTWVkaWNhbCBUZWNobm9sb2dpZXMgUHJpdmF0ZSBMaW1pdGVkIiwianRpIjoiNWNlMjU4NmUtNzkxMC00M2JkLWI0YTgtZTQ1OWFmOWVjZGM0IiwibG9jYWxlIjoiZW4tSU4iLCJuYW1lIjoiYm9tbWEgcm9oaXRoIHZlbmthdGEgcGF2YW4gc2FpIiwic3ViIjoiY2E5ZWNiNTctNTQ3Zi00ZDU3LTk4ZTAtMWI1ZWJjNDFiN2NlIn0sImVtYWlsIjoicmI4MjQxQHNybWlzdC5lZHUuaW4iLCJuYW1lIjoiYm9tbWEgcm9oaXRoIHZlbmthdGEgcGF2YW4gc2FpIiwicm9sbE5vIjoicmEyMzExMDI2MDEwNzU1IiwiYWNjZXNzQ29kZSI6IlFrYnB4SCIsImNsaWVudElEIjoiY2E5ZWNiNTctNTQ3Zi00ZDU3LTk4ZTAtMWI1ZWJjNDFiN2NlIiwiY2xpZW50U2VjcmV0IjoiUFltdFVuVnlyVVpZc1BuSCJ9.M8YznvIx5SClWYvLoX_22Z-gDP3vvel1a8k4QFM1gSM";
+// 🔥 ALWAYS use latest token (env or paste fresh)
+const TOKEN = process.env.TOKEN || "PASTE_FRESH_TOKEN_HERE";
 
 const API = "http://20.207.122.201/evaluation-service/notifications";
 
 // 🔹 Fetch notifications
 async function getNotifications() {
   try {
+    if (!TOKEN || TOKEN.includes("PASTE")) {
+      console.log("❌ Please set a valid token");
+      return [];
+    }
+
+    console.log("Using Token:", TOKEN.substring(0, 20) + "...");
+
     const res = await axios.get(API, {
       headers: {
         Authorization: `Bearer ${TOKEN}`,
       },
     });
 
-    return res.data.notifications;
+    return res.data.notifications || [];
   } catch (err) {
-    console.log("API ERROR:", err.response?.data || err.message);
+    console.log("❌ API ERROR:", err.response?.data || err.message);
     return [];
   }
 }
@@ -38,6 +46,17 @@ function processNotifications(data) {
     .slice(0, 10);
 }
 
+// 🔹 Display
+function display(data) {
+  console.log("\n===== TOP 10 NOTIFICATIONS =====\n");
+
+  data.forEach((item, i) => {
+    console.log(
+      `${i + 1}. [${item.Type}] ${item.Message} → ${item.Timestamp}`
+    );
+  });
+}
+
 // 🔹 Main
 async function main() {
   const data = await getNotifications();
@@ -48,14 +67,7 @@ async function main() {
   }
 
   const top = processNotifications(data);
-
-  console.log("\n===== TOP 10 NOTIFICATIONS =====\n");
-
-  top.forEach((item, i) => {
-    console.log(
-      `${i + 1}. [${item.Type}] ${item.Message} → ${item.Timestamp}`
-    );
-  });
+  display(top);
 }
 
 main();

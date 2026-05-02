@@ -7,10 +7,17 @@ async function Log(stack, level, pkg, message, token) {
     await axios.post(
       LOG_API,
       {
+<<<<<<< HEAD
         stack,
         level,
         package: pkg,
         message,
+=======
+        stack: stack,
+        level: level,
+        package: pkg,
+        message: message,
+>>>>>>> c1eab2738eacc1238d54f9cfcfcd8ee902ff2506
       },
       {
         headers: {

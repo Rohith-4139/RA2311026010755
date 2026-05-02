@@ -1,0 +1,16 @@
+{
+  "name": "affordmed_project",
+  "version": "1.0.0",
+  "description": "1. Register API 2. Get Token 3. Run backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.15.2"
+  }
+}

@@ -1,33 +1,71 @@
 const axios = require("axios");
+const Log = require("../logging_middleware");
 
-const LOG_API = "http://20.207.122.201/evaluation-service/logs";
+// 🔑 Paste your token here OR use environment variable
+const TOKEN = process.env.TOKEN || "PASTE_YOUR_ACCESS_TOKEN_HERE";
 
-async function Log(stack, level, pkg, message, token) {
+const API = "http://20.207.122.201/evaluation-service/notifications";
+
+// ✅ Fetch notifications
+async function getNotifications() {
   try {
-    await axios.post(
-      LOG_API,
-      {
-<<<<<<< HEAD
-        stack,
-        level,
-        package: pkg,
-        message,
-=======
-        stack: stack,
-        level: level,
-        package: pkg,
-        message: message,
->>>>>>> c1eab2738eacc1238d54f9cfcfcd8ee902ff2506
+    const res = await axios.get(API, {
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    });
+
+    await Log("backend", "info", "api", "Fetched notifications", TOKEN);
+
+    return res.data.notifications || [];
   } catch (err) {
-    console.log("Log error:", err.message);
+    console.log("API ERROR:", err.response?.data || err.message);
+    await Log("backend", "error", "api", "Failed to fetch notifications", TOKEN);
+    return [];
   }
 }
 
-module.exports = Log;
+// ✅ Sort + take top 10
+function processNotifications(data) {
+  const priority = {
+    Placement: 1,
+    Event: 2,
+    Result: 3,
+  };
+
+  return data
+    .sort((a, b) => {
+      // Priority first
+      if (priority[a.Type] !== priority[b.Type]) {
+        return priority[a.Type] - priority[b.Type];
+      }
+
+      // If same type → latest first
+      return new Date(b.Timestamp) - new Date(a.Timestamp);
+    })
+    .slice(0, 10);
+}
+
+// ✅ Main function
+async function main() {
+  const data = await getNotifications();
+
+  if (!data.length) {
+    console.log("No notifications ❌");
+    return;
+  }
+
+  const top = processNotifications(data);
+
+  console.log("\n===== TOP 10 NOTIFICATIONS =====\n");
+
+  top.forEach((n, i) => {
+    console.log(
+      `${i + 1}. [${n.Type}] ${n.Message} → ${n.Timestamp}`
+    );
+  });
+
+  await Log("backend", "info", "handler", "Displayed notifications", TOKEN);
+}
+
+main();
